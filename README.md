@@ -43,12 +43,12 @@ nmap -sV -sC fowsniff
 143/tcp open  imap
 ```
 Foi possível encontrar o site da Fowsniff Corp:
-![Nmap](screenshots/primeira_mensagem.png)
+![Nmap](screenshots/site_fowsniff.png)
 Aparentemente a aplicação encontra-se fora do ar.
 
 ## OSINT
 Realizei Google Dorks para buscar possíveis credenciais vazadas vinculadas a Fowsniff Corp:
-![Nmap](screenshots/segunda_menssagem.png)
+![Nmap](screenshots/osint_git.png)
 A busca foi bem sucedida, foi possível encontrar uma lista de credenciais de e-mail e as hashes de duas respectivas senhas.
 ![Nmap](screenshots/segunda_menssagem.png)
 
