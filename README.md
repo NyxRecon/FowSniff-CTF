@@ -10,10 +10,14 @@ Write-up do Fowsniff CTF (TryHackMe), documentando o processo de reconhecimento 
 | Plataforma  | TryHackMe                                       |
 | Sistema     | Linux                                           |
 | Dificuldade | Easy                                            |
-| Objetivo    | OSINT,obtenção de acesso inicial, movimentação lateral e privilege escalation |
+| Objetivo    | OSINT, Google Dorks, Quebra de Hashes, Acesso Inicial e Escalada de Privilégios |
 | Status      | Completed ✅                                    |
 
-
+> ⚠️ **AVISO LEGAL E NOTA DE ISENÇÃO DE RESPONSABILIDADE**
+>
+> As credenciais, *hashes*, nomes de usuários e dados expostos neste *write-up* referem-se exclusivamente a um ambiente controlado e fictício do laboratório CTF (**TryHackMe - Fowsniff**), cujas informações já são de conhecimento público e amplamente divulgadas para fins educacionais.
+>
+> A manutenção desses dados na íntegra possui caráter **estritamente didático**, visando demonstrar o raciocínio analítico e facilitar o aprendizado de outros estudantes de cibersegurança. Em cenários reais e no exercício da profissão de *Penetration Tester* / Segurança da Informação, **não é ético nem permitido** divulgar credenciais, dados sensíveis ou informações de identificação pessoal (PII). A prática de *responsible disclosure* (divulgação responsável) deve ser rigorosamente seguida.
 ## 🛠️ Ferramentas utilizadas
 
 ```text
@@ -48,9 +52,9 @@ Aparentemente a aplicação encontra-se fora do ar.
 
 ## OSINT
 Realizei Google Dorks para buscar possíveis credenciais vazadas vinculadas a Fowsniff Corp:
-![Nmap](screenshots/osint_git.png)
+![Nmap](screenshots/osint_git_hub.png)
 A busca foi bem sucedida, foi possível encontrar uma lista de credenciais de e-mail e as hashes de duas respectivas senhas.
-![Nmap](screenshots/segunda_menssagem.png)
+![Nmap](screenshots/hashes.png)
 
 # Acesso inicial com NetCat pela porta 110 (POP3)
 Após encontrar as credencias de e-mail,  sabendo que a porta 110, onde o serviço POP3 (protocolo utilizado por clientes de e-mail para baixar mensagens de um servidor remoto para o dispositivo local), esta aberta. O próximo passo foi quebrar as hashes para descobrir as senhas de cada usuário.  
@@ -58,7 +62,7 @@ Após encontrar as credencias de e-mail,  sabendo que a porta 110, onde o servi�
 ## Quebrando Hashes no Crack Station
 Existem muitas formas e ferramentas para quebra de hash, como JhonTheRipper, Hashcat, CyberChef, etc. 
 Seguindo a proposta do criador do CTF eu utilizei o site CrackStation e obtive as senhas.
-![Nmap](screenshots/segunda_menssagem.png)
+![Nmap](screenshots/quebrando_hashes.png)
 ```bash
 mauer@fowsniff:8a28a94a588a95b80163709ab4313aa4 ---> mailcall
 mustikka@fowsniff:ae1644dac5b77c0cf51e0d26ad6d7e56 ---> bilbo101
@@ -285,8 +289,11 @@ O script possui uma vulnerabilidade, o mesmo redireciona a execução para ---> 
 
 # Escalada de Privilégios (MOTD Poisoning)
 Verifiquei as permissões do arquivo cube.sh:
-![Nmap](screenshots/segunda_menssagem.png)
+
+![Nmap](screenshots/permissão_users.png)
+
 O grupo users tem permissão para editar o arquivo.
+
 ## Inserindo Shell Reverso no script
 O arquivo será executado como root, ao inserir uma shell reversa posso conseguir escalar privilégios:
 ```bash
@@ -297,10 +304,12 @@ A shell reversa acima permite acessar uma conexão remotamente, ao iniciar o ace
 python3 -c 'import pty; pty.spawn("/bin/bash")'
 ```
 Criei um pseudo terminal após o acesso e consegui me estabelecer como root:
-![Nmap](screenshots/segunda_menssagem.png)
+
+![Nmap](screenshots/root_complete.png)
 # Root Flag 
 Abusando dos privilégios obtidos, naveguei até a pasta root e acessei o arquivo flag.txt:
-![Nmap](screenshots/segunda_menssagem.png)
+
+![Nmap](screenshots/root_flag.png)
 
 # 🔓 Vulnerabilidades Identificadas
 
@@ -315,14 +324,10 @@ Abusando dos privilégios obtidos, naveguei até a pasta root e acessei o arquiv
 
 ## 🏁 Conclusão
 
-O **Sudo Agent CTF** apresentou uma cadeia de exploração que começou com uma etapa simples de reconhecimento e evoluiu progressivamente até a obtenção de privilégios de root.
+Apesar de a máquina **Fowsniff** possuir apenas uma única flag final, ela se provou um desafio extremamente rico, dinâmico e educativo. É um CTF altamente recomendado para iniciantes em segurança da informação e penetration testing, pois simula uma cadeia de ataque (Kill Chain) completa e realista.
 
-A exploração envolveu **enumeração de serviços, manipulação de User-Agent, descoberta de credenciais fracas, análise de arquivos e esteganografia, acesso via SSH e escalada de privilégios**.
+O principal diferencial desta máquina é a forma como ela força o praticante a conectar conceitos de diferentes áreas e buscar métodos alternativos para contornar cada obstáculo. Durante o processo, foi possível colocar em prática desde o reconhecimento passivo com Google Dorks e análise de dados expostos (OSINT), até a quebra de hashes, enumeração de serviços locais (POP3) e a criação/recepção de Reverse Shells para escalada de privilégios via MOTD Poisoning.
 
-O ponto principal da máquina foi perceber que cada informação obtida durante a exploração servia como ponto de partida para a próxima etapa. A partir do acesso inicial ao FTP, foi possível analisar os arquivos disponíveis, recuperar informações ocultas e obter as credenciais necessárias para acessar o sistema via SSH.
+No geral, é um laboratório focado na prática sólida dos fundamentos, incentivando a mentalidade investigativa e mostrando como pequenas falhas de configuração em camadas distintas podem levar ao comprometimento total de um servidor. Um CTF simples no objetivo, mas essencial para a construção de uma base técnica forte.
 
-Após o acesso como usuário comum, a análise das permissões do `sudo` revelou uma configuração vulnerável associada à **CVE-2019-14287**, permitindo contornar a restrição de execução e obter uma shell com privilégios de root.
 
-Esse CTF reforçou a importância de realizar uma **enumeração cuidadosa e encadear as informações encontradas**, além de demonstrar como credenciais fracas, informações ocultas e softwares desatualizados podem ser combinados para comprometer completamente um sistema.
-
-**Status: Machine Pwned ✅👽**
